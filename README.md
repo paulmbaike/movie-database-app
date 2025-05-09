@@ -5,10 +5,10 @@ A comprehensive and feature-rich movie database cross platform application built
 ## Screenshots
 
 ### Light Mode
-![Home Screen Light Mode](./app-screenshots/home-lightmode.PNG)
+<img src="./app-screenshots/home-lightmode.PNG" alt="Home Screen Light Mode" width="400" />
 
 ### Dark Mode
-![Home Screen Dark Mode](./app-screenshots/home-darkmode.PNG)
+<img src="./app-screenshots/home-darkmode.PNG" alt="Home Screen Dark Mode" width="400" />
 
 ## Features
 
@@ -74,3 +74,8 @@ In the output, you'll find options to open the app in a:
 - [React Query](https://tanstack.com/query/latest) - Data fetching and state management
 - [Zod](https://zod.dev/) - Runtime validation
 - [React Navigation](https://reactnavigation.org/) - Navigation library
+
+## Backend API
+
+This application is powered by a dedicated backend API built with ASP.NET Core. You can find the backend repository here:
+[MovieDatabaseAPI](https://github.com/paulmbaike/MovieDatabaseAPI)
