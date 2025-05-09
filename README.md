@@ -1,23 +1,21 @@
 # Movie Database App 🎬
 
-A comprehensive and feature-rich movie database application built with React Native, Expo, and TypeScript. This app allows users to browse, search, and manage movies with a beautiful and responsive UI that supports both light and dark modes.
+A comprehensive and feature-rich movie database cross platform application built with React Native, Expo, and TypeScript. This app allows users to browse, search, and manage movies with a beautiful and responsive UI that supports both light and dark modes.
 
 ## Screenshots
 
 ### Light Mode
 ![Home Screen Light Mode](./app-screenshots/home-lightmode.PNG)
-![Explore Screen Light Mode](./app-screenshots/explore-lightmode.PNG)
 
 ### Dark Mode
 ![Home Screen Dark Mode](./app-screenshots/home-darkmode.PNG)
-![Explore Screen Dark Mode](./app-screenshots/explore-darkmode.PNG)
 
 ## Features
 
 ### Authentication & Profile Management
 - **User Registration**: Create an account with username, email, and password with validation
 - **User Login**: Secure authentication with JWT token storage
-- **Profile Management**: View and update user profile information
+- **Profile Management**: View and update preferences
 - **Change Password**: Ability to update passwords with validation
 
 ### Content Browsing
