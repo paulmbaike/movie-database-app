@@ -16,13 +16,13 @@ import React from 'react';
 import { FlatList, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useColorModeContext } from '../../contexts/color-mode-context';
+import { useColorMode } from '@gluestack-ui/themed';
 import genreService from '../../services/genre-service';
 import peopleService from '../../services/people-service';
 
 export default function ExploreScreen() {
   const router = useRouter();
-  const { colorMode } = useColorModeContext();
+  const colorMode = useColorMode();
   const isDark = colorMode === 'dark';
   
   // Fetch popular genres
@@ -65,9 +65,9 @@ export default function ExploreScreen() {
   const isRefreshing = genresQuery.isLoading || peopleQuery.isLoading;
   
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#1F2937' : '#FFFFFF' }}>
       <ScrollView 
-        contentContainerStyle={{ flexGrow: 1 }}
+        contentContainerStyle={{ flexGrow: 1, backgroundColor: isDark ? '#1F2937' : '#FFFFFF' }}
         refreshControl={
           <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
         }
@@ -211,8 +211,10 @@ export default function ExploreScreen() {
                     onPress={() => navigateToGenre(String(item.genre.id))}
                   >
                     <Box
-                      bg={isDark ? '$backgroundDark800' : '$white'}
+                      bg={isDark ? '$backgroundDark800' : '$backgroundLight100'}
                       borderRadius="$lg"
+                      borderWidth="$0.5"
+                      borderColor={isDark ? '$borderDark700' : '$borderLight300'}
                       p="$4"
                       flexDirection="row"
                       justifyContent="space-between"

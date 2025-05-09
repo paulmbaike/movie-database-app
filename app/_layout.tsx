@@ -1,5 +1,4 @@
 import '../disableWarnings';
-import { GluestackUIProvider } from '@gluestack-ui/themed';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
@@ -11,16 +10,11 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { AuthProvider } from '../contexts/auth-context';
 import { ColorModeProvider, useColorModeContext } from '../contexts/color-mode-context';
 import { AppQueryClientProvider } from '../contexts/query-client-provider';
-import { config } from '../gluestack-ui.config';
 
-// Wrapper component to provide GluestackUI with color mode
-function ColorModeWrapper({ children }: { children: React.ReactNode }) {
-  const { colorMode } = useColorModeContext();
-  return (
-    <GluestackUIProvider config={config} colorMode={colorMode}>
-      {children}
-    </GluestackUIProvider>
-  );
+// Status bar component that responds to color mode changes
+function StatusBarManager() {
+  const { isDark } = useColorModeContext();
+  return <StatusBar style={isDark ? 'light' : 'dark'} />;
 }
 
 export default function RootLayout() {
@@ -36,12 +30,11 @@ export default function RootLayout() {
 
   return (
     <ColorModeProvider>
-      <ColorModeWrapper>
-        <SafeAreaProvider>
-          <AppQueryClientProvider>
-            <AuthProvider>
-              <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-
+      <StatusBarManager />
+      <SafeAreaProvider>
+        <AppQueryClientProvider>
+          <AuthProvider>
+            <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
               <Stack>
                 <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                 <Stack.Screen name="auth" options={{ headerShown: false }} />
@@ -53,12 +46,10 @@ export default function RootLayout() {
                 <Stack.Screen name="profile" options={{ headerShown: false }} />
                 <Stack.Screen name="+not-found" />
               </Stack>
-              <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
             </ThemeProvider>
           </AuthProvider>
         </AppQueryClientProvider>
       </SafeAreaProvider>
-    </ColorModeWrapper>
-  </ColorModeProvider>
+    </ColorModeProvider>
   );
 }

@@ -17,11 +17,11 @@ import { Dimensions, FlatList, Platform, Pressable, RefreshControl, StyleSheet }
 
 import movieService, { Movie, MovieResponse } from '@/services/movie-service';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useColorModeContext } from '../../contexts/color-mode-context';
+import { useColorMode } from '@gluestack-ui/themed';
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { colorMode } = useColorModeContext();
+  const colorMode = useColorMode();
   const isDark = colorMode === 'dark';
   
   // Calculate dimensions for the grid
@@ -186,7 +186,7 @@ export default function HomeScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#1F2937' : '#FFFFFF' }}>
       <Box flex={1} bg={isDark ? '$backgroundDark900' : '$backgroundLight100'}>
         {/* Header */}
         <VStack space="xs" p="$4" pb="$2">

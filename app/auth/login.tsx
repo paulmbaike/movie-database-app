@@ -1,21 +1,21 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import {
-    Box,
-    Button,
-    FormControl,
-    FormControlError,
-    FormControlErrorText,
-    FormControlHelper,
-    FormControlHelperText,
-    Heading,
-    HStack,
-    Input,
-    InputField,
-    Pressable,
-    ScrollView,
-    Text,
-    useColorMode,
-    VStack
+  Box,
+  Button,
+  FormControl,
+  FormControlError,
+  FormControlErrorText,
+  FormControlHelper,
+  FormControlHelperText,
+  Heading,
+  HStack,
+  Input,
+  InputField,
+  Pressable,
+  ScrollView,
+  Text,
+  useColorMode,
+  VStack
 } from '@gluestack-ui/themed';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
@@ -120,7 +120,7 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1 }} edges={['bottom', 'left', 'right']}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}

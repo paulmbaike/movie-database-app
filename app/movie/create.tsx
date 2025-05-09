@@ -317,6 +317,7 @@ export default function CreateMovieScreen() {
                       fontSize: 16,
                       padding: 0,
                       color: isDark ? '#fff' : '#000',
+                      backgroundColor: 'transparent',
                       outline: 'none',
                       outlineWidth: 0
                     }}

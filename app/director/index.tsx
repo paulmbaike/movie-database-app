@@ -54,7 +54,7 @@ type DirectorForm = z.infer<typeof directorSchema>;
 
 export default function DirectorsScreen() {
   const router = useRouter();
-  const { colorMode } = useColorMode();
+  const colorMode = useColorMode();
   const toast = useToast();
   const isDark = colorMode === 'dark';
   const queryClient = useQueryClient();
@@ -252,7 +252,7 @@ export default function DirectorsScreen() {
       $dark-borderWidth={1}
     >
       <HStack alignItems="center" mb="$2">
-        <Box flex={1}>
+        <Box flex={1} bg="transparent">
           <Heading size="md">{item.name}</Heading>
           {item.dateOfBirth && (
             <Text color={isDark ? '$textDark400' : '$textLight500'} size="sm">
@@ -290,6 +290,19 @@ export default function DirectorsScreen() {
 
   return (
     <Box flex={1} p="$4" bg={isDark ? '$backgroundDark900' : '$backgroundLight100'}>
+      <HStack justifyContent="space-between" alignItems="center" mb="$4">
+        <Heading size="xl">Directors</Heading>
+        <Button
+          variant="outline"
+          size="sm"
+          borderRadius="$full"
+          onPress={handleRefresh}
+          isDisabled={isLoading || isFetching}
+        >
+          <ButtonText>Refresh</ButtonText>
+        </Button>
+      </HStack>
+
       {isLoading ? (
         <Box flex={1} justifyContent="center" alignItems="center">
           <Spinner size="large" />
@@ -337,7 +350,7 @@ export default function DirectorsScreen() {
         style={{
           position: 'absolute',
           right: 16,
-          bottom: 26,
+          bottom: 16,
           ...Platform.select({
             ios: {
               shadowColor: '#000',
@@ -359,7 +372,12 @@ export default function DirectorsScreen() {
 
       {/* Create/Edit Director Modal */}
       <Modal isOpen={showModal} onClose={handleCloseModal}>
-        <ModalBackdrop />
+        <ModalBackdrop 
+          style={{
+            backgroundColor: isDark ? 'rgba(0, 0, 0, 0.85)' : 'rgba(0, 0, 0, 0.7)', 
+            backdropFilter: 'blur(2px)'  
+          }}
+        />
         <ModalContent>
           <ModalHeader>
             <Heading size="lg">{modalMode === 'create' ? 'Add Director' : 'Edit Director'}</Heading>
@@ -382,9 +400,9 @@ export default function DirectorsScreen() {
                 <FormControl.Error>{formErrors.name}</FormControl.Error>
               </FormControl>
 
-              {/* Biography input */}
+              {/* Bio input */}
               <FormControl isInvalid={!!formErrors.biography}>
-                <FormControl.Label>Biography (optional)</FormControl.Label>
+                <FormControl.Label>Bio (optional)</FormControl.Label>
                 <Box
                   borderWidth={1}
                   borderRadius="$lg"
@@ -399,13 +417,14 @@ export default function DirectorsScreen() {
                     value={form.biography}
                     onChangeText={(value) => handleChange('biography', value)}
                     multiline={true}
-                    numberOfLines={4}
+                    numberOfLines={3}
                     style={{
-                      minHeight: 120,
+                      minHeight: 80,
                       textAlignVertical: 'top',
                       fontSize: 16,
                       padding: 0,
                       color: isDark ? '#fff' : '#000',
+                      backgroundColor: 'transparent',
                       outline: 'none',
                       outlineWidth: 0
                     }}
@@ -433,31 +452,59 @@ export default function DirectorsScreen() {
                   <>
                     <Pressable onPress={() => setShowDatePicker(true)}>
                       <Input>
-                        <InputField
-                          placeholder="YYYY-MM-DD"
-                          value={form.birthDate}
-                          editable={false}
-                        />
+                        <Pressable onPress={() => setShowDatePicker(true)} style={{ flex: 1 }}>
+                          <InputField
+                            placeholder="YYYY-MM-DD"
+                            value={form.birthDate}
+                            editable={false}
+                            onPressIn={() => setShowDatePicker(true)}
+                            pointerEvents="none"
+                          />
+                        </Pressable>
                         <InputSlot pr="$3">
-                          <InputIcon as={MaterialIcons} name="calendar-today" />
+                          <Pressable onPress={() => setShowDatePicker(true)}>
+                            <InputIcon as={MaterialIcons} name="calendar-today" />
+                          </Pressable>
                         </InputSlot>
                       </Input>
                     </Pressable>
                     {showDatePicker && (
-                      // @ts-ignore - DateTimePicker is only used on native platforms
-                      <DateTimePicker
-                        value={selectedDate || new Date()}
-                        mode="date"
-                        display="default"
-                        onChange={(event, date) => {
-                          setShowDatePicker(false);
-                          if (event.type === 'set' && date) {
-                            setSelectedDate(date);
-                            const formattedDate = date.toISOString().split('T')[0];
-                            handleChange('birthDate', formattedDate);
-                          }
-                        }}
-                      />
+                      Platform.OS === 'ios' ? (
+                        // iOS implementation
+                        <DateTimePicker
+                          value={selectedDate || new Date()}
+                          mode="date"
+                          display="spinner"
+                          onChange={(event: any, date?: Date) => {
+                            // On iOS, the change event works differently
+                            setShowDatePicker(false);
+                            
+                            // Check if date exists
+                            if (date) {
+                              setSelectedDate(date);
+                              const formattedDate = date.toISOString().split('T')[0];
+                              handleChange('birthDate', formattedDate);
+                              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                            }
+                          }}
+                        />
+                      ) : (
+                        // Android implementation
+                        <DateTimePicker
+                          value={selectedDate || new Date()}
+                          mode="date"
+                          display="default"
+                          onChange={(event, date) => {
+                            setShowDatePicker(false);
+                            if (event.type === 'set' && date) {
+                              setSelectedDate(date);
+                              const formattedDate = date.toISOString().split('T')[0];
+                              handleChange('birthDate', formattedDate);
+                              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                            }
+                          }}
+                        />
+                      )
                     )}
                   </>
                 )}
@@ -493,7 +540,12 @@ export default function DirectorsScreen() {
 
       {/* Delete Confirmation Modal */}
       <Modal isOpen={showDeleteModal} onClose={() => setShowDeleteModal(false)}>
-        <ModalBackdrop />
+        <ModalBackdrop 
+          style={{
+            backgroundColor: isDark ? 'rgba(0, 0, 0, 0.85)' : 'rgba(0, 0, 0, 0.7)', 
+            backdropFilter: 'blur(2px)'  
+          }}
+        />
         <ModalContent>
           <ModalHeader>
             <Heading size="lg">Confirm Delete</Heading>

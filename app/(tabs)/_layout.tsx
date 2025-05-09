@@ -5,13 +5,13 @@ import { Platform } from 'react-native';
 
 import { HapticTab } from '@/components/HapticTab';
 import { config } from '@/gluestack-ui.config';
-import { useColorScheme } from '@/hooks/useColorScheme';
 import { useAuth } from '../../contexts/auth-context';
+import { useColorModeContext } from '../../contexts/color-mode-context';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
   const { isAuthenticated } = useAuth();
   const navigation = useNavigation();
+  const { isDark } = useColorModeContext();
   
   // Get primary color from gluestack config
   const primaryColor = config.tokens.colors.primary500;
@@ -28,14 +28,20 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: primaryColor,
+        tabBarInactiveTintColor: isDark ? '#AAAAAA' : '#777777',
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarLabelPosition: 'below-icon',
         tabBarStyle: Platform.select({
           ios: {
             position: 'absolute',
+            backgroundColor: isDark ? '#1a1a1a' : '#FFFFFF',
+            borderTopColor: isDark ? '#333333' : '#E0E0E0',
           },
-          default: {},
+          default: {
+            backgroundColor: isDark ? '#1a1a1a' : '#FFFFFF',
+            borderTopColor: isDark ? '#333333' : '#E0E0E0',
+          },
         }),
       }}>
       <Tabs.Screen

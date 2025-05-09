@@ -87,8 +87,8 @@ export default function GenreMoviesScreen() {
         {/* Content */}
         {moviesQuery.isLoading ? (
           <Box flex={1} alignItems="center" justifyContent="center">
-            <Spinner size="large" />
-            <Text mt="$4" color={isDark ? '$textDark400' : '$textLight500'}>
+            <Spinner size="large" color={isDark ? '$primary400' : '$primary500'} />
+            <Text mt="$4" color={isDark ? '$textDark200' : '$textLight700'}>
               Loading movies...
             </Text>
           </Box>
@@ -110,7 +110,12 @@ export default function GenreMoviesScreen() {
               </Box>
             )}
             refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+              <RefreshControl 
+                refreshing={refreshing} 
+                onRefresh={handleRefresh} 
+                tintColor={isDark ? '#fff' : '#000'}
+                colors={['#0077FF']}
+              />
             }
             ListHeaderComponent={
               <Box mb="$4">
@@ -145,11 +150,11 @@ export default function GenreMoviesScreen() {
               as={MaterialIcons}
               name="movie"
               size="2xl"
-              color={isDark ? '$textDark700' : '$textLight300'} 
+              color={isDark ? '$textDark600' : '$textLight300'} 
               mb="$4"
             />
-            <Heading size="lg" mb="$2" textAlign="center">No Movies Found</Heading>
-            <Text textAlign="center" color={isDark ? '$textDark400' : '$textLight500'}>
+            <Heading size="lg" mb="$2" textAlign="center" color={isDark ? '$textDark50' : '$textLight900'}>No Movies Found</Heading>
+            <Text textAlign="center" color={isDark ? '$textDark300' : '$textLight500'}>
               There are no movies available in this genre.
             </Text>
           </Box>

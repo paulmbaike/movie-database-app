@@ -160,7 +160,12 @@ export default function MovieDetailsScreen() {
   // Delete confirmation modal
   const DeleteConfirmationModal = () => (
     <Modal isOpen={showDeleteModal} onClose={cancelDelete}>
-      <ModalBackdrop />
+      <ModalBackdrop 
+        style={{
+          backgroundColor: isDark ? 'rgba(0, 0, 0, 0.85)' : 'rgba(0, 0, 0, 0.7)', 
+          backdropFilter: 'blur(2px)'  
+        }}
+      />
       <ModalContent>
         <ModalHeader>
           <Heading size="lg">Delete Movie</Heading>

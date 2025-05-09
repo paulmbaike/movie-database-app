@@ -1,28 +1,28 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import {
-  Box,
-  Button,
-  ButtonText,
-  Fab,
-  FormControl,
-  HStack,
-  Heading,
-  Input,
-  InputField,
-  InputIcon,
-  InputSlot,
-  Modal,
-  ModalBackdrop,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  Pressable,
-  Spinner,
-  Text,
-  VStack,
-  useColorMode
+    Box,
+    Button,
+    ButtonText,
+    Fab,
+    FormControl,
+    HStack,
+    Heading,
+    Input,
+    InputField,
+    InputIcon,
+    InputSlot,
+    Modal,
+    ModalBackdrop,
+    ModalBody,
+    ModalCloseButton,
+    ModalContent,
+    ModalFooter,
+    ModalHeader,
+    Pressable,
+    Spinner,
+    Text,
+    VStack,
+    useColorMode
 } from '@gluestack-ui/themed';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Haptics from 'expo-haptics';
@@ -55,7 +55,7 @@ type ActorForm = z.infer<typeof actorSchema>;
 
 export default function ActorsScreen() {
   const router = useRouter();
-  const { colorMode } = useColorMode();
+  const colorMode = useColorMode();
   const isDark = colorMode === 'dark';
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
@@ -265,7 +265,7 @@ export default function ActorsScreen() {
           )}
           
           {item.bio && (
-            <Box mt="$1">
+            <Box mt="$1" bg="transparent">
               <Text 
                 fontSize="$sm" 
                 color={isDark ? '$textDark400' : '$textLight500'}
@@ -304,6 +304,19 @@ export default function ActorsScreen() {
 
   return (
     <Box flex={1} p="$4" bg={isDark ? '$backgroundDark900' : '$backgroundLight100'}>
+      <HStack justifyContent="space-between" alignItems="center" mb="$4">
+        <Heading size="xl">Actors</Heading>
+        <Button
+          variant="outline"
+          size="sm"
+          borderRadius="$full"
+          onPress={handleRefresh}
+          isDisabled={isLoading || isFetching}
+        >
+          <ButtonText>Refresh</ButtonText>
+        </Button>
+      </HStack>
+
       {isLoading ? (
         <Box flex={1} justifyContent="center" alignItems="center">
           <Spinner size="large" />
@@ -351,7 +364,7 @@ export default function ActorsScreen() {
         style={{
           position: 'absolute',
           right: 16,
-          bottom: 26,
+          bottom: 16,
           ...Platform.select({
             ios: {
               shadowColor: '#000',
@@ -373,7 +386,12 @@ export default function ActorsScreen() {
 
       {/* Create/Edit Actor Modal */}
       <Modal isOpen={showModal} onClose={handleCloseModal}>
-        <ModalBackdrop />
+        <ModalBackdrop 
+          style={{
+            backgroundColor: isDark ? 'rgba(0, 0, 0, 0.85)' : 'rgba(0, 0, 0, 0.7)', 
+            backdropFilter: 'blur(2px)'  
+          }}
+        />
         <ModalContent>
           <ModalHeader>
             <Heading size="lg">{modalMode === 'create' ? 'Add Actor' : 'Edit Actor'}</Heading>
@@ -413,13 +431,14 @@ export default function ActorsScreen() {
                     value={form.biography}
                     onChangeText={(value) => handleChange('biography', value)}
                     multiline={true}
-                    numberOfLines={4}
+                    numberOfLines={3}
                     style={{
-                      minHeight: 120,
+                      minHeight: 80,
                       textAlignVertical: 'top',
                       fontSize: 16,
                       padding: 0,
                       color: isDark ? '#fff' : '#000',
+                      backgroundColor: 'transparent',
                       outline: 'none',
                       outlineWidth: 0
                     }}
@@ -447,31 +466,59 @@ export default function ActorsScreen() {
                   <>
                     <Pressable onPress={() => setShowDatePicker(true)}>
                       <Input>
-                        <InputField
-                          placeholder="YYYY-MM-DD"
-                          value={form.birthDate}
-                          editable={false}
-                        />
+                        <Pressable onPress={() => setShowDatePicker(true)} style={{ flex: 1 }}>
+                          <InputField
+                            placeholder="YYYY-MM-DD"
+                            value={form.birthDate}
+                            editable={false}
+                            onPressIn={() => setShowDatePicker(true)}
+                            pointerEvents="none"
+                          />
+                        </Pressable>
                         <InputSlot pr="$3">
-                          <InputIcon as={MaterialIcons} name="calendar-today" />
+                          <Pressable onPress={() => setShowDatePicker(true)}>
+                            <InputIcon as={MaterialIcons} name="calendar-today" />
+                          </Pressable>
                         </InputSlot>
                       </Input>
                     </Pressable>
                     {showDatePicker && (
-                      // @ts-ignore - DateTimePicker is only used on native platforms
-                      <DateTimePicker
-                        value={selectedDate || new Date()}
-                        mode="date"
-                        display="default"
-                        onChange={(event, date) => {
-                          setShowDatePicker(false);
-                          if (event.type === 'set' && date) {
-                            setSelectedDate(date);
-                            const formattedDate = date.toISOString().split('T')[0];
-                            handleChange('birthDate', formattedDate);
-                          }
-                        }}
-                      />
+                      Platform.OS === 'ios' ? (
+                        // iOS implementation
+                        <DateTimePicker
+                          value={selectedDate || new Date()}
+                          mode="date"
+                          display="spinner"
+                          onChange={(event: any, date?: Date) => {
+                            // On iOS, the change event works differently
+                            setShowDatePicker(false);
+                            
+                            // Check if date exists
+                            if (date) {
+                              setSelectedDate(date);
+                              const formattedDate = date.toISOString().split('T')[0];
+                              handleChange('birthDate', formattedDate);
+                              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                            }
+                          }}
+                        />
+                      ) : (
+                        // Android implementation
+                        <DateTimePicker
+                          value={selectedDate || new Date()}
+                          mode="date"
+                          display="default"
+                          onChange={(event, date) => {
+                            setShowDatePicker(false);
+                            if (event.type === 'set' && date) {
+                              setSelectedDate(date);
+                              const formattedDate = date.toISOString().split('T')[0];
+                              handleChange('birthDate', formattedDate);
+                              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                            }
+                          }}
+                        />
+                      )
                     )}
                   </>
                 )}
@@ -507,7 +554,12 @@ export default function ActorsScreen() {
 
       {/* Delete Confirmation Modal */}
       <Modal isOpen={showDeleteModal} onClose={() => setShowDeleteModal(false)}>
-        <ModalBackdrop />
+        <ModalBackdrop 
+          style={{
+            backgroundColor: isDark ? 'rgba(0, 0, 0, 0.85)' : 'rgba(0, 0, 0, 0.7)', 
+            backdropFilter: 'blur(2px)'  
+          }}
+        />
         <ModalContent>
           <ModalHeader>
             <Heading size="lg">Confirm Delete</Heading>

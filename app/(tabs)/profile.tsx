@@ -7,22 +7,25 @@ import {
     HStack,
     Icon,
     Pressable,
-    Switch,
     Text,
     VStack,
+    useColorMode,
 } from '@gluestack-ui/themed';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { ThemeToggle } from '../../components/theme';
 import { useAuth } from '../../contexts/auth-context';
-import { useColorModeContext } from '../../contexts/color-mode-context';
+// Using built-in useColorMode hook for unified theming
 
 export default function ProfileScreen() {
   const router = useRouter();
   const { isAuthenticated, user, logoutUser } = useAuth();
-  const { colorMode, toggleColorMode } = useColorModeContext();
+  const colorMode = useColorMode();
+  const isDark = colorMode === 'dark';
+  
   
   // Get time-based greeting
   const getGreeting = () => {
@@ -81,11 +84,15 @@ export default function ProfileScreen() {
   // If not authenticated, show login prompt
   if (!isAuthenticated) {
     return (
-      <SafeAreaView style={{ flex: 1 }}>
-        <Box flex={1} p="$5" justifyContent="center" alignItems="center">
-          <Icon as={MaterialIcons} size="6xl" color="$textLight400" $dark-color="$textDark500">
-            <MaterialIcons name="account-circle" />
-          </Icon>
+      <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#1F2937' : '#FFFFFF' }} edges={['top', 'bottom', 'left', 'right']}>
+        <Box flex={1} p="$5" justifyContent="center" alignItems="center" bg={isDark ? '$backgroundDark900' : '$backgroundLight50'}>
+          <Icon 
+            as={MaterialIcons} 
+            name="account-circle" 
+            size="6xl" 
+            color="$textLight400" 
+            $dark-color="$textDark500" 
+          />
           <Heading mt="$6" textAlign="center">Sign in to your account</Heading>
           <Text mt="$2" textAlign="center" color="$textLight500" $dark-color="$textDark400">
             Create an account or sign in to access your profile and saved content.
@@ -93,14 +100,19 @@ export default function ProfileScreen() {
           <Button mt="$6" size="lg" onPress={navigateToLogin}>
             <Text color="$white" fontWeight="$medium">Sign In</Text>
           </Button>
+          
+          {/* Theme toggle for non-authenticated users */}
+          <Box mt="$10" width="100%">
+            <ThemeToggle />
+          </Box>
         </Box>
       </SafeAreaView>
     );
   }
   
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <Box flex={1} p="$4">
+    <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#1F2937' : '#FFFFFF' }} edges={['top', 'bottom', 'left', 'right']}>
+      <Box flex={1} p="$4" bg={isDark ? '$backgroundDark900' : '$backgroundLight50'}>
         {/* Header */}
         <VStack space="xs" mb="$6" alignItems="center">
           <Box
@@ -147,27 +159,10 @@ export default function ProfileScreen() {
           
           {/* Preferences Section */}
           <VStack space="sm">
-            <Heading size="md" mb="$2">Preferences</Heading>
-            
-            <HStack justifyContent="space-between" alignItems="center" py="$3">
-              <HStack space="md" alignItems="center">
-                <Icon 
-                  as={MaterialIcons} 
-                  name={colorMode === 'dark' ? 'dark-mode' : 'light-mode'} 
-                  size="xl" 
-                  color="$textLight900" 
-                  $dark-color="$textDark100" 
-                />
-                <Text fontWeight="$medium">Dark Mode</Text>
-              </HStack>
-              <Switch
-                value={colorMode === 'dark'}
-                onToggle={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  toggleColorMode();
-                }}
-              />
-            </HStack>
+            <Heading size="md" mb="$2">Appearance</Heading>
+            <Box py="$3">
+              <ThemeToggle />
+            </Box>
           </VStack>
           
 

@@ -14,7 +14,7 @@ import { router } from 'expo-router';
 import React from 'react';
 import { Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useColorModeContext } from '../../contexts/color-mode-context';
+import { useColorMode } from '@gluestack-ui/themed';
 
 type NavigationItem = {
   title: string;
@@ -45,7 +45,7 @@ const navigationItems: NavigationItem[] = [
 ];
 
 export default function MoreScreen() {
-  const { colorMode } = useColorModeContext();
+  const colorMode = useColorMode();
   const isDark = colorMode === 'dark';
   
   const handleNavigation = (route: '/actor' | '/director' | '/genre') => {
@@ -54,7 +54,7 @@ export default function MoreScreen() {
   };
   
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#1F2937' : '#FFFFFF' }}>
       <Box flex={1} bg={isDark ? '$backgroundDark900' : '$backgroundLight100'}>
         {/* Header */}
         <VStack space="md" mb="$6" p="$4">

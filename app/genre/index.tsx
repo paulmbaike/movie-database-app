@@ -1,26 +1,26 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import {
-  Box,
-  Button,
-  ButtonText,
-  Fab,
-  FormControl,
-  HStack,
-  Heading,
-  Input,
-  InputField,
-  Modal,
-  ModalBackdrop,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  Spinner,
-  Text,
-  VStack,
-  useColorMode,
-  useToast
+    Box,
+    Button,
+    ButtonText,
+    Fab,
+    FormControl,
+    HStack,
+    Heading,
+    Input,
+    InputField,
+    Modal,
+    ModalBackdrop,
+    ModalBody,
+    ModalCloseButton,
+    ModalContent,
+    ModalFooter,
+    ModalHeader,
+    Spinner,
+    Text,
+    VStack,
+    useColorMode,
+    useToast
 } from '@gluestack-ui/themed';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Haptics from 'expo-haptics';
@@ -42,7 +42,7 @@ type GenreForm = z.infer<typeof genreSchema>;
 
 export default function GenresScreen() {
   const router = useRouter();
-  const { colorMode } = useColorMode();
+  const colorMode = useColorMode();
   const toast = useToast();
   const isDark = colorMode === 'dark';
   const queryClient = useQueryClient();
@@ -234,15 +234,14 @@ export default function GenresScreen() {
         <VStack space="xs" flex={1}>
           <Heading size="md">{item.name}</Heading>
           {item.description && (
-            <Box mt="$1">
-              <Text 
-                fontSize="$sm" 
-                color={isDark ? '$textDark400' : '$textLight500'}
-                lineHeight="$sm"
-              >
-                {truncateText(item.description, 120)}
-              </Text>
-            </Box>
+            <Text 
+              fontSize="$sm" 
+              color={isDark ? '$textDark400' : '$textLight500'}
+              lineHeight="$sm"
+              mt="$1"
+            >
+              {truncateText(item.description, 120)}
+            </Text>
           )}
         </VStack>
         <HStack space="sm">
@@ -273,7 +272,20 @@ export default function GenresScreen() {
 
   return (
     <Box flex={1} p="$4" bg={isDark ? '$backgroundDark900' : '$backgroundLight100'}>
-       {isLoading ? (
+        <HStack justifyContent="space-between" alignItems="center" mb="$4">
+          <Heading size="xl">Genres</Heading>
+          <Button
+            variant="outline"
+            size="sm"
+            borderRadius="$full"
+            onPress={handleRefresh}
+            isDisabled={isLoading || isFetching}
+          >
+            <ButtonText>Refresh</ButtonText>
+          </Button>
+        </HStack>
+
+        {isLoading ? (
           <Box flex={1} justifyContent="center" alignItems="center">
             <Spinner size="large" />
             <Text mt="$2">Loading genres...</Text>
@@ -318,7 +330,7 @@ export default function GenresScreen() {
           style={{
             position: 'absolute',
             right: 16,
-            bottom: 26,
+            bottom: 16,
             ...Platform.select({
               ios: {
                 shadowColor: '#000',
@@ -340,7 +352,12 @@ export default function GenresScreen() {
 
         {/* Create/Edit Genre Modal */}
         <Modal isOpen={showModal} onClose={handleCloseModal}>
-          <ModalBackdrop />
+          <ModalBackdrop 
+            style={{
+              backgroundColor: isDark ? 'rgba(0, 0, 0, 0.85)' : 'rgba(0, 0, 0, 0.7)', 
+              backdropFilter: 'blur(2px)'  
+            }}
+          />
           <ModalContent>
             <ModalHeader>
               <Heading size="lg">{modalMode === 'create' ? 'Add Genre' : 'Edit Genre'}</Heading>
@@ -380,13 +397,14 @@ export default function GenresScreen() {
                       value={form.description}
                       onChangeText={(value) => handleChange('description', value)}
                       multiline={true}
-                      numberOfLines={4}
+                      numberOfLines={3}
                       style={{
-                        minHeight: 100,
+                        minHeight: 80,
                         textAlignVertical: 'top',
                         fontSize: 16,
                         padding: 0,
                         color: isDark ? '#fff' : '#000',
+                        backgroundColor: 'transparent',
                         outline: 'none',
                         outlineWidth: 0
                       }}
@@ -424,7 +442,12 @@ export default function GenresScreen() {
       
       {/* Delete Confirmation Modal */}
       <Modal isOpen={showDeleteModal} onClose={() => setShowDeleteModal(false)}>
-        <ModalBackdrop />
+        <ModalBackdrop 
+          style={{
+            backgroundColor: isDark ? 'rgba(0, 0, 0, 0.85)' : 'rgba(0, 0, 0, 0.7)', 
+            backdropFilter: 'blur(2px)'  
+          }}
+        />
         <ModalContent>
           <ModalHeader>
             <Heading size="lg">Confirm Delete</Heading>
