@@ -1,110 +1,267 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
+import {
+  Box,
+  Heading,
+  HStack,
+  Icon,
+  Pressable,
+  ScrollView,
+  Text,
+  VStack,
+} from '@gluestack-ui/themed';
+import { useQuery } from '@tanstack/react-query';
+import * as Haptics from 'expo-haptics';
+import { useRouter } from 'expo-router';
+import React from 'react';
+import { FlatList, RefreshControl } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Collapsible } from '@/components/Collapsible';
-import { ExternalLink } from '@/components/ExternalLink';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { IconSymbol } from '@/components/ui/IconSymbol';
+import { useColorModeContext } from '../../contexts/color-mode-context';
+import genreService from '../../services/genre-service';
+import peopleService from '../../services/people-service';
 
-export default function TabTwoScreen() {
+export default function ExploreScreen() {
+  const router = useRouter();
+  const { colorMode } = useColorModeContext();
+  const isDark = colorMode === 'dark';
+  
+  // Fetch popular genres
+  const genresQuery = useQuery({
+    queryKey: ['popularGenres'],
+    queryFn: () => genreService.getPopularGenres(),
+  });
+  
+  // Fetch popular people
+  const peopleQuery = useQuery({
+    queryKey: ['popularPeople'],
+    queryFn: () => peopleService.getPopularPeople(),
+  });
+  
+  // Handle refresh
+  const handleRefresh = () => {
+    genresQuery.refetch();
+    peopleQuery.refetch();
+  };
+  
+  // Navigate to genre screen
+  const navigateToGenre = (genreId: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    router.push(`/movie/genre/${genreId}`);
+  };
+  
+  // Navigate to person screen
+  const navigateToPerson = (personId: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    router.push(`/movie/actor/${personId}`);
+  };
+  
+  // Navigate to search screen
+  const navigateToSearch = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    router.push('/search');
+  };
+  
+  // Check if any query is loading for refresh control
+  const isRefreshing = genresQuery.isLoading || peopleQuery.isLoading;
+  
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Explore</ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image source={require('@/assets/images/react-logo.png')} style={{ alignSelf: 'center' }} />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Custom fonts">
-        <ThemedText>
-          Open <ThemedText type="defaultSemiBold">app/_layout.tsx</ThemedText> to see how to load{' '}
-          <ThemedText style={{ fontFamily: 'SpaceMono' }}>
-            custom fonts such as this one.
-          </ThemedText>
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/versions/latest/sdk/font">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful <ThemedText type="defaultSemiBold">react-native-reanimated</ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+    <SafeAreaView style={{ flex: 1 }}>
+      <ScrollView 
+        contentContainerStyle={{ flexGrow: 1 }}
+        refreshControl={
+          <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
+        }
+      >
+        <Box p="$4">
+          {/* Header */}
+          <VStack space="md" mb="$6">
+            <Heading size="2xl">Explore</Heading>
+            <Text color="$textLight500" $dark-color="$textDark400">
+              Discover movies by genre or find your favorite actors and directors
+            </Text>
+            
+            {/* Search Button */}
+            <Pressable 
+              onPress={navigateToSearch}
+              bg="$primary500"
+              py="$3"
+              borderRadius="$lg"
+              flexDirection="row"
+              alignItems="center"
+              justifyContent="center"
+              mt="$2"
+            >
+              <Icon as={MaterialIcons} name="search" color="$white" size="md" mr="$2"/>
+              <Text color="$white" fontWeight="$medium">Search Movies & People</Text>
+            </Pressable>
+          </VStack>
+
+          {/* Popular People Section */}
+          <VStack space="md" mb="$6">
+            <Heading size="xl">Popular People</Heading>
+            {peopleQuery.isLoading ? (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <HStack space="md" py="$2">
+                  {[1, 2, 3, 4].map((_, index) => (
+                    <VStack key={index} alignItems="center" width="$24">
+                      <Box
+                        width="$20"
+                        height="$20"
+                        borderRadius="$full"
+                        bg={isDark ? '$backgroundDark700' : '$backgroundLight200'}
+                        justifyContent="center"
+                        alignItems="center"
+                        mb="$2"
+                      />
+                      <Box 
+                        width="$16" 
+                        height="$4" 
+                        bg={isDark ? '$backgroundDark700' : '$backgroundLight200'}
+                        borderRadius="$md"
+                      />
+                    </VStack>
+                  ))}
+                </HStack>
+              </ScrollView>
+            ) : peopleQuery.data && peopleQuery.data.length > 0 ? (
+              <FlatList
+                data={peopleQuery.data}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                renderItem={({ item }) => (
+                  <Pressable
+                    onPress={() => navigateToPerson(String(item.actor.id))}
+                    mx="$1"
+                  >
+                    <VStack alignItems="center">
+                      <Box 
+                        width={80} 
+                        height={80} 
+                        borderRadius="$full" 
+                        overflow="hidden" 
+                        mb="$2" 
+                        bg={isDark ? '$backgroundDark800' : '$backgroundLight200'}
+                        justifyContent="center" 
+                        alignItems="center"
+                      >
+                        <Text 
+                          color={isDark ? '$primary400' : '$primary500'} 
+                          fontWeight="$bold" 
+                          size="xl"
+                        >
+                          {item.actor.name.split(' ').map(n => n[0]).join('')}
+                        </Text>
+                      </Box>
+                      <Text fontWeight="$medium" textAlign="center" numberOfLines={2}>
+                        {item.actor.name}
+                      </Text>
+                      <Text
+                        size="xs"
+                        color="$textLight500"
+                        $dark-color="$textDark400"
+                        textAlign="center"
+                      >
+                        {item.movieCount} movies
+                      </Text>
+                    </VStack>
+                  </Pressable>
+                )}
+                keyExtractor={(item) => String(item.actor.id)}
+              />
+            ) : (
+              <Box 
+                py="$6" 
+                alignItems="center" 
+                justifyContent="center"
+                borderRadius="$lg"
+                bg="$backgroundLight50"
+                borderColor="$borderLight200"
+                borderWidth={1}
+                $dark-bg="$backgroundDark900"
+                $dark-borderColor="$borderDark800"
+              >
+                <Icon as={MaterialIcons} name="people" size="xl" color="$textLight400" $dark-color="$textDark500"/>
+                <Text mt="$2" color="$textLight500" $dark-color="$textDark400">
+                  No people available
+                </Text>
+              </Box>
+            )}
+          </VStack>
+          
+          {/* Genres Section */}
+          <VStack space="md" mb="$6">
+            <Heading size="xl">Top 5 Genres</Heading>
+            {genresQuery.isLoading ? (
+              <VStack space="sm">
+                {[1, 2, 3, 4].map((_, index) => (
+                  <Box 
+                    key={index}
+                    height="$16"
+                    bg="$backgroundLight200"
+                    $dark-bg="$backgroundDark700"
+                    borderRadius="$lg"
+                  />
+                ))}
+              </VStack>
+            ) : genresQuery.data && genresQuery.data.length > 0 ? (
+              <VStack space="sm">
+                {genresQuery.data.map((item) => (
+                  <Pressable 
+                    key={item.genre.id}
+                    onPress={() => navigateToGenre(String(item.genre.id))}
+                  >
+                    <Box
+                      bg={isDark ? '$backgroundDark800' : '$white'}
+                      borderRadius="$lg"
+                      p="$4"
+                      flexDirection="row"
+                      justifyContent="space-between"
+                      alignItems="center"
+                    >
+                      <VStack>
+                        <Text fontWeight="$medium" size="lg">
+                          {item.genre.name}
+                        </Text>
+                        <Text 
+                          color={isDark ? '$textDark400' : '$textLight500'} 
+                          size="sm"
+                        >
+                          {item.movieCount} {item.movieCount === 1 ? 'movie' : 'movies'}
+                        </Text>
+                      </VStack>
+                      <MaterialIcons 
+                        name="chevron-right" 
+                        size={24} 
+                        color={isDark ? '#a1a1aa' : '#a3a3a3'} 
+                      />
+                    </Box>
+                  </Pressable>
+                ))}
+              </VStack>
+            ) : (
+              <Box 
+                py="$6" 
+                alignItems="center" 
+                justifyContent="center"
+                borderRadius="$lg"
+                bg="$backgroundLight50"
+                borderColor="$borderLight200"
+                borderWidth={1}
+                $dark-bg="$backgroundDark900"
+                $dark-borderColor="$borderDark800"
+              >
+                <Icon as={MaterialIcons} name="category" size="xl" color="$textLight400" $dark-color="$textDark500"/>
+                <Text mt="$2" color="$textLight500" $dark-color="$textDark400">
+                  No genres available
+                </Text>
+              </Box>
+            )}
+          </VStack>
+
+        </Box>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
-  },
-  titleContainer: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-});
+

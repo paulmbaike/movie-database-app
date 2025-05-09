@@ -1,0 +1,492 @@
+import { MaterialIcons } from '@expo/vector-icons';
+import {
+  Badge,
+  BadgeText,
+  Box,
+  Button,
+  ButtonIcon,
+  ButtonText,
+  Heading,
+  HStack,
+  Icon,
+  Modal,
+  ModalBackdrop,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  Spinner,
+  Text,
+  useColorMode,
+  VStack
+} from '@gluestack-ui/themed';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import * as Haptics from 'expo-haptics';
+import { Image } from 'expo-image';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import { Dimensions, ScrollView as RNScrollView, Share } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { Toast, ToastDescription, ToastTitle, useToast } from '@gluestack-ui/themed';
+import { useAuth } from '../../contexts/auth-context';
+import movieService from '../../services/movie-service';
+
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const HEADER_HEIGHT = 300;
+
+export default function MovieDetailsScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
+  const { isAuthenticated, user } = useAuth();
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [isInWatchlist, setIsInWatchlist] = useState(false);
+  const { colorMode } = useColorMode();
+  const isDark = colorMode === 'dark';
+  const toast = useToast();
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const queryClient = useQueryClient();
+  
+  // Fetch movie details
+  const movieQuery = useQuery({
+    queryKey: ['movie', id],
+    queryFn: () => movieService.getMovie(parseInt(id as string)),
+    enabled: !!id,
+  });
+  
+  // Fetch user favorites (if authenticated)
+  // const favoritesQuery = useQuery({
+  //   queryKey: ['favorites'],
+  //   queryFn: movieService.getFavorites,
+  //   enabled: isAuthenticated,
+  //   onSuccess: (data) => {
+  //     if (data.some((movie: Movie) => movie.id === id)) {
+  //       setIsFavorite(true);
+  //     }
+  //   },
+  // });
+  
+  // Fetch user watchlist (if authenticated)
+  // const watchlistQuery = useQuery({
+  //   queryKey: ['watchlist'],
+  //   queryFn: movieService.getWatchlist,
+  //   enabled: isAuthenticated,
+  //   onSuccess: (data) => {
+  //     if (data.some((movie: Movie) => movie.id === id)) {
+  //       setIsInWatchlist(true);
+  //     }
+  //   },
+  // });
+  
+  // Toggle favorite status - commented due to missing implementation
+  const toggleFavorite = async () => {
+    if (!isAuthenticated) {
+      // Redirect to login if not authenticated
+      router.push('/auth/login');
+      return;
+    }
+    
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    
+    try {
+      // These methods need to be implemented in movieService
+      // if (isFavorite) {
+      //   await movieService.removeFromFavorites(parseInt(id as string));
+      // } else {
+      //   await movieService.addToFavorites(parseInt(id as string));
+      // }
+      setIsFavorite(!isFavorite);
+      console.log('Favorite toggled:', !isFavorite);
+    } catch (error) {
+      console.error('Failed to update favorites:', error);
+    }
+  };
+  
+  // Toggle watchlist status - commented due to missing implementation
+  const toggleWatchlist = async () => {
+    if (!isAuthenticated) {
+      // Redirect to login if not authenticated
+      router.push('/auth/login');
+      return;
+    }
+    
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    
+    try {
+      // These methods need to be implemented in movieService
+      // if (isInWatchlist) {
+      //   await movieService.removeFromWatchlist(parseInt(id as string));
+      // } else {
+      //   await movieService.addToWatchlist(parseInt(id as string));
+      // }
+      setIsInWatchlist(!isInWatchlist);
+      console.log('Watchlist toggled:', !isInWatchlist);
+    } catch (error) {
+      console.error('Failed to update watchlist:', error);
+    }
+  };
+  
+  // Share movie
+  const shareMovie = async () => {
+    if (!movieQuery.data) return;
+    
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    
+    try {
+      await Share.share({
+        message: `Check out ${movieQuery.data.title} on Movie Database!`,
+        url: `moviedb://movie/${id}`,
+      });
+    } catch (error) {
+      console.error('Failed to share:', error);
+    }
+  };
+  
+  // Navigate to actor/director profile
+  const navigateToProfile = (personId: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    router.push(`/person/${personId}`);
+  };
+  
+  // Navigate to edit movie
+  const navigateToEditMovie = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    router.push(`/movie/edit/${id}`);
+  };
+  
+  // Delete movie mutation with direct implementation for better responsiveness
+  const deleteMovieMutation = useMutation({
+    mutationFn: () => movieService.deleteMovie(parseInt(id as string)),
+    onSuccess: () => {
+      // Invalidate and refetch
+      queryClient.invalidateQueries({ queryKey: ['movies'] });
+      toast.show({
+        placement: "top",
+        render: ({ id: toastId }) => {
+          return (
+            <Toast nativeID={toastId} action="success" variant="solid">
+              <VStack space="xs">
+                <ToastTitle>Success</ToastTitle>
+                <ToastDescription>Movie deleted successfully</ToastDescription>
+              </VStack>
+            </Toast>
+          );
+        },
+      });
+      router.replace('/');
+    },
+    onError: (error) => {
+      toast.show({
+        placement: "top",
+        render: ({ id: toastId }) => {
+          return (
+            <Toast nativeID={toastId} action="error" variant="solid">
+              <VStack space="xs">
+                <ToastTitle>Error</ToastTitle>
+                <ToastDescription>{(error as Error).message || 'Failed to delete movie'}</ToastDescription>
+              </VStack>
+            </Toast>
+          );
+        },
+      });
+    }
+  });
+  
+  // Handle delete movie - show confirmation modal
+  const handleDeleteMovie = () => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    setShowDeleteModal(true);
+  };
+  
+  // Confirm deletion
+  const confirmDelete = () => {
+    setShowDeleteModal(false);
+    // Direct mutation call for better responsiveness
+    deleteMovieMutation.mutate();
+  };
+  
+  // Cancel deletion
+  const cancelDelete = () => {
+    setShowDeleteModal(false);
+  };
+  
+  // Loading state
+  // Early access to movie to avoid flickering
+  const movie = movieQuery.data || {
+    title: '',
+    posterUrl: '',
+    runtimeMinutes: null,
+    releaseYear: null,
+    genres: [],
+    plot: '',
+    directorName: '',
+    actors: []
+  };
+  
+  // Delete confirmation modal
+  const DeleteConfirmationModal = () => (
+    <Modal isOpen={showDeleteModal} onClose={cancelDelete}>
+      <ModalBackdrop />
+      <ModalContent>
+        <ModalHeader>
+          <Heading size="lg">Delete Movie</Heading>
+          <ModalCloseButton>
+            <MaterialIcons name="close" size={24} color={isDark ? "white" : "black"} />
+          </ModalCloseButton>
+        </ModalHeader>
+        <ModalBody>
+          <Text>
+            Are you sure you want to delete this movie? This action cannot be undone.
+          </Text>
+        </ModalBody>
+        <ModalFooter>
+          <Button
+            variant="outline"
+            size="sm"
+            action="secondary"
+            mr="$3"
+            onPress={cancelDelete}
+          >
+            <Text>Cancel</Text>
+          </Button>
+          <Button
+            size="sm"
+            action="negative"
+            bg="$error600"
+            borderWidth={0}
+            onPress={confirmDelete}
+            isDisabled={deleteMovieMutation.isPending}
+          >
+            {deleteMovieMutation.isPending ? (
+              <Spinner size="small" color="$white" />
+            ) : (
+              <Text color="$white">Delete</Text>
+            )}
+          </Button>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
+  );
+
+  // Format movie duration
+  const formatDuration = (minutes?: number | null) => {
+    if (!minutes) return 'Unknown';
+    
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    
+    return `${hours}h ${mins}m`;
+  };
+  
+  const formattedDuration = formatDuration(movie.runtimeMinutes);
+  
+  return (
+    <Box flex={1} bg="$backgroundLight100" $dark-bg="$backgroundDark900">
+      <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
+        {/* Header with back button */}
+        {/* <Box position="absolute" top={0} left={0} right={0} zIndex={10}>
+          <HStack justifyContent="space-between" p="$4">
+            <Button
+              variant="link"
+              onPress={() => router.back()}
+              p="$2"
+              borderRadius="$full"
+              bg="rgba(0,0,0,0.5)"
+            >
+              <ButtonIcon as={MaterialIcons} name="arrow-back" color="$white" />
+            </Button>
+          </HStack>
+        </Box> */}
+        
+        {/* Movie poster header */}
+        <Box height={HEADER_HEIGHT} overflow="hidden">
+          {movieQuery.isLoading ? (
+            <Box
+              bg={isDark ? '$backgroundDark800' : '$backgroundLight100'}
+              height="100%"
+              alignItems="center"
+              justifyContent="center"
+            >
+              <Spinner size="large" />
+            </Box>
+          ) :  <Image
+          source={{ uri: movie.posterUrl || 'https://dummyimage.com/800x800/fefefe&text=No+Poster' }}
+          style={{ width: '100%', height: '100%' }}
+          contentFit="cover"
+          cachePolicy="memory-disk"
+          priority="high"
+        />}
+          
+          {/* Simple overlay at the bottom */}
+          <Box 
+            position="absolute"
+            bottom={0}
+            left={0}
+            right={0}
+            height={120}
+            style={{
+              backgroundColor: isDark ? '#000000' : '#FFFFFF',
+              opacity: 0.6,
+            }}
+          />
+        </Box>
+        
+        <RNScrollView 
+          showsVerticalScrollIndicator={false} 
+          contentContainerStyle={{ paddingBottom: 150 }}
+          style={{ flex: 1 }}
+        >
+          {movieQuery.isLoading ? (
+            <Box flex={1} p="$5" alignItems="center" justifyContent="center">
+              <Spinner size="large" />
+              <Text mt="$4" color={isDark ? '$textDark400' : '$textLight500'}>Loading movie details...</Text>
+            </Box>
+          ) : movieQuery.data ? (
+            <Box px="$5" pt="$5" pb="$20">
+              {/* Movie Poster and Basic Info */}
+              <HStack space="md" mb="$6">
+                <Box width={120} height={180} borderRadius="$lg" overflow="hidden">
+                  <Image
+                    source={{ uri: movie.posterUrl || 'https://dummyimage.com/120x180/fefefe&text=No+Poster' }}
+                    style={{ width: '100%', height: '100%' }}
+                    contentFit="cover"
+                    cachePolicy="memory-disk"
+                  />
+                </Box>
+                <VStack flex={1} justifyContent="space-between">
+                  <VStack space="xs">
+                    <Heading size="xl">{movie.title}</Heading>
+                    <HStack space="xs" mb="$1">
+                      <Text>{formatDuration(movie.runtimeMinutes)}</Text>
+                      <Text>•</Text>
+                      <Text>{movie.releaseYear}</Text>
+                    </HStack>
+                  </VStack>
+                
+                  {/* Genre Tags */}
+                  {movie.genres && movie.genres.length > 0 && (
+                    <HStack flexWrap="wrap" space="xs" mb="$2">
+                      {movie.genres.map(genre => (
+                        <Badge key={genre} variant="outline" action="muted">
+                          <BadgeText>{genre}</BadgeText>
+                        </Badge>
+                      ))}
+                    </HStack>
+                  )}
+                
+                  {/* Action Buttons */}
+                  <HStack flexWrap="wrap" space="sm" mt="$2">
+                  {/* <Button
+                    variant="outline"
+                    size="sm"
+                    borderRadius="$full"
+                    onPress={toggleFavorite}
+                    borderColor={isFavorite ? "$primary500" : "$borderLight400"}
+                    $dark-borderColor={isFavorite ? "$primary500" : "$borderDark600"}
+                    mb="$2"
+                  >
+                    <ButtonIcon as={MaterialIcons} name={isFavorite ? "favorite" : "favorite-border"} color={isFavorite ? "$primary500" : "$textLight900"} $dark-color={isFavorite ? "$primary500" : "$textDark100"} />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    borderRadius="$full"
+                    onPress={toggleWatchlist}
+                    borderColor={isInWatchlist ? "$primary500" : "$borderLight400"}
+                    $dark-borderColor={isInWatchlist ? "$primary500" : "$borderDark600"}
+                    mb="$2"
+                  >
+                    <ButtonIcon as={MaterialIcons} name={isInWatchlist ? "bookmark" : "bookmark-border"} color={isInWatchlist ? "$primary500" : "$textLight900"} $dark-color={isInWatchlist ? "$primary500" : "$textDark100"} />
+                  </Button> */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    borderRadius="$full"
+                    onPress={shareMovie}
+                    mb="$2"
+                  >
+                    <ButtonIcon as={MaterialIcons} name="share" color="$textLight900" $dark-color="$textDark100" />
+                  </Button>
+                  {isAuthenticated && (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        borderRadius="$full"
+                        onPress={navigateToEditMovie}
+                        mb="$2"
+                      >
+                        <ButtonIcon as={MaterialIcons} name="edit" color="$textLight900" $dark-color="$textDark100" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        borderRadius="$full"
+                        onPress={handleDeleteMovie}
+                        borderColor="$error500"
+                        $dark-borderColor="$error500"
+                        mb="$2"
+                        isDisabled={deleteMovieMutation.isPending}
+                      >
+                        {deleteMovieMutation.isPending ? (
+                          <Spinner size="small" color="$error500" />
+                        ) : (
+            
+            {/* Plot */}
+            {movie.plot && (
+              <VStack space="sm" mb="$6">
+                <Heading size="md">Plot</Heading>
+                <Text>{movie.plot}</Text>
+              </VStack>
+            )}
+            
+            {/* Director */}
+            {movie.directorName && (
+              <VStack space="sm" mb="$6">
+                <Heading size="md">Director</Heading>
+                <Box
+                  p="$3"
+                  borderRadius="$lg"
+                  bg="$backgroundLight50"
+                  $dark-bg="$backgroundDark800"
+                >
+                  <Text fontWeight="$medium" size="lg">{movie.directorName}</Text>
+                  <Text color="$textLight500" $dark-color="$textDark400">Director</Text>
+                </Box>
+              </VStack>
+            )}
+            
+            {/* Cast */}
+            {movie.actors && movie.actors.length > 0 && (
+              <VStack space="sm" mb="$6">
+                <Heading size="md">Cast</Heading>
+                <Box p="$3" borderRadius="$lg" bg="$backgroundLight50" $dark-bg="$backgroundDark800">
+                  {movie.actors.map((actor, index) => (
+                    <Text key={index} fontWeight="$medium">{actor}</Text>
+                  ))}
+                </Box>
+              </VStack>
+            )}
+          </Box>
+          ) : (
+            <Box flex={1} p="$5" alignItems="center" justifyContent="center">
+              <Icon as={MaterialIcons} name="error-outline" size="5xl" color="$error600" mb="$4" />
+              <Heading size="lg" mb="$2" textAlign="center">Error Loading Movie</Heading>
+              <Text textAlign="center" color={isDark ? '$textDark400' : '$textLight500'} mb="$6">
+                {(movieQuery.error as Error)?.message || 'Failed to load movie details'}
+              </Text>
+              <Button onPress={() => router.back()}>
+                <ButtonText>Go Back</ButtonText>
+              </Button>
+            </Box>
+          )}
+        </RNScrollView>
+      </SafeAreaView>
+      
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal />
+    </Box>
+  );
+}

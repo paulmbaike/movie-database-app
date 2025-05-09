@@ -1,0 +1,22 @@
+when installing any package, search for npm to always pull the latest version.
+use gluestack for ui
+prefer iteration and modularization over code duplication
+use lowercase with dashes for directories
+Use Expo's official documentation for setting up and configuring your projects: https://docs.expo.dev/
+Write unit tests using Jest and React Native Testing Library.
+Use Zod for runtime validation and error handling.
+Use React Context and useReducer for managing global state
+Leverage react-query for data fetching and caching; avoid excessive API calls.
+For complex state management, consider using Zustand or Redux Toolkit.
+Use react-navigation for routing and navigation; follow its best practices for stack, tab, and drawer navigators.
+Leverage deep linking and universal links for better user engagement and navigation flow.
+Use dynamic routes with expo-router for better navigation handling.
+Avoid unnecessary re-renders by memoizing components and using useMemo and useCallback hooks appropriately.
+Implement dark mode support using Expo's useColorScheme.
+Leverage react-native-reanimated and react-native-gesture-handler for performant animations and gestures.
+Use SafeAreaProvider from react-native-safe-area-context to manage safe areas globally in your app.
+Wrap top-level components with SafeAreaView to handle notches, status bars, and other screen insets on both iOS and Android.
+Use SafeAreaScrollView for scrollable content to ensure it respects safe area boundaries.
+Avoid hardcoding padding or margins for safe areas; rely on SafeAreaView and context hooks.
+do not create a new src folder when app folder already exists
+Do not make gigantic files, when it gets too long break it down into smaller files
